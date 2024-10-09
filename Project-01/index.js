@@ -1,10 +1,22 @@
 const express = require('express');
 const users = require('./MOCK_DATA.json'); 
+const mongoose = require('mongoose');
 const fs = require('fs');
 
 const app = express();
 
 app.use(express.urlencoded({extended: false}));
+
+app.use((req , res , next) => {
+  console.log("Hello from the learning middleware");
+  next();
+})
+
+app.use((req , res , next) => {
+  fs.appendFile('logs.txt',`\n ${Date.now()}: ${req.ip} ${req.method}: ${req.path}` , (error , data)=>{
+    next();
+  })
+})
 
 app.get('/api/users',(req , res) =>{
   return res.json(users);
@@ -35,7 +47,7 @@ app.post('/api/users',(req ,res) =>{
   users.push({...body , id: users.length + 1});
   console.log("user added ----->");
   fs.writeFile('./MOCK_DATA.json', JSON.stringify(users) , (error , data ) =>{
-    return res.json({status : "success" ,  id: users.length});
+    return res.status(201).json({status : "success" ,  id: users.length});
   })
 })
 
